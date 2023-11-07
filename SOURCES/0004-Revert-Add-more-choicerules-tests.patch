@@ -1,0 +1,314 @@
+From 5fef9bb8c9899e64306a87ab89574f3afb9968de Mon Sep 17 00:00:00 2001
+From: Nicola Sella <nsella@redhat.com>
+Date: Wed, 7 Dec 2022 16:54:02 +0100
+Subject: [PATCH 3/3] Revert "Add more choicerules tests"
+
+This reverts commit ce9dda7d3e5b27f4cd883eb69e7ea5cace0a2828.
+---
+ test/testcases/choicerules/choice1.t  | 27 ---------------
+ test/testcases/choicerules/choice1b.t | 18 ----------
+ test/testcases/choicerules/choice2.t  | 21 ------------
+ test/testcases/choicerules/choice2b.t | 47 ---------------------------
+ test/testcases/choicerules/choice3.t  | 16 ---------
+ test/testcases/choicerules/choice3b.t | 31 ------------------
+ test/testcases/choicerules/choice4.t  | 18 ----------
+ test/testcases/choicerules/choice5.t  | 21 ------------
+ test/testcases/choicerules/choice6.t  | 28 ----------------
+ 9 files changed, 227 deletions(-)
+ delete mode 100644 test/testcases/choicerules/choice1.t
+ delete mode 100644 test/testcases/choicerules/choice1b.t
+ delete mode 100644 test/testcases/choicerules/choice2b.t
+ delete mode 100644 test/testcases/choicerules/choice3b.t
+ delete mode 100644 test/testcases/choicerules/choice5.t
+ delete mode 100644 test/testcases/choicerules/choice6.t
+
+diff --git a/test/testcases/choicerules/choice1.t b/test/testcases/choicerules/choice1.t
+deleted file mode 100644
+index fbd5184a..00000000
+--- a/test/testcases/choicerules/choice1.t
++++ /dev/null
+@@ -1,27 +0,0 @@
+-#
+-#Rule #2:
+-#    !A-2-1.noarch [3] (w1)
+-#    B-2-1.noarch [4] (w2)
+-#    C-2-1.noarch [5]
+-#
+-# ==> Choice Rule
+-#    !A-2-1.noarch [3] (w1)
+-#    B-2-1.noarch [4] (w2)
+-#
+-repo system 0 testtags <inline>
+-#>=Pkg: B 1 1 noarch
+-#>=Prv: P = 1
+-repo available 0 testtags <inline>
+-#>=Pkg: A 2 1 noarch
+-#>=Req: P = 2
+-#>=Pkg: B 2 1 noarch
+-#>=Prv: P = 2
+-#>=Pkg: C 2 1 noarch
+-#>=Prv: P = 2
+-system i686 rpm system
+-
+-job install name A
+-result transaction,problems <inline>
+-result transaction,problems <inline>
+-#>install A-2-1.noarch@available
+-#>upgrade B-1-1.noarch@system B-2-1.noarch@available
+diff --git a/test/testcases/choicerules/choice1b.t b/test/testcases/choicerules/choice1b.t
+deleted file mode 100644
+index fc47b722..00000000
+--- a/test/testcases/choicerules/choice1b.t
++++ /dev/null
+@@ -1,18 +0,0 @@
+-repo system 0 testtags <inline>
+-#>=Pkg: B 1 1 noarch
+-#>=Prv: P = 1
+-repo available 0 testtags <inline>
+-#>=Pkg: X 1 1 noarch
+-#>=Pkg: Y 1 1 noarch
+-#>=Pkg: A 2 1 noarch
+-#>=Req: P = 2 <IF> (X & Y)
+-#>=Pkg: B 2 1 noarch
+-#>=Prv: P = 2
+-#>=Pkg: C 2 1 noarch
+-#>=Prv: P = 2
+-system i686 rpm system
+-
+-job install name A
+-result transaction,problems <inline>
+-result transaction,problems <inline>
+-#>install A-2-1.noarch@available
+diff --git a/test/testcases/choicerules/choice2.t b/test/testcases/choicerules/choice2.t
+index 1eb6c7c3..cb067b18 100644
+--- a/test/testcases/choicerules/choice2.t
++++ b/test/testcases/choicerules/choice2.t
+@@ -1,24 +1,3 @@
+-#
+-# Test that updating package B will update package A
+-# instead of pulling in new package C
+-#
+-#Rule #5:
+-#    !A-2-2.noarch [5] (w1)
+-#    B-2-1.noarch [6] (w2)
+-#    C-2-1.noarch [8]
+-#Rule #7:
+-#    !A-2-1.noarch [4] (w1)
+-#    B-2-1.noarch [6] (w2)
+-#    C-2-1.noarch [8]
+-#Rule #8:
+-#    !A-1-1.noarch [2]I (w1)
+-#    B-1-1.noarch [3]I (w2)
+-#    C-1-1.noarch [7]
+-#
+-# ==> Choice Rule for #8:
+-#    !A-1-1.noarch [2]I (w1)
+-#    B-1-1.noarch [3]I (w2)
+-#
+ repo system 0 testtags <inline>
+ #>=Pkg: A 1 1 noarch
+ #>=Req: P = 1
+diff --git a/test/testcases/choicerules/choice2b.t b/test/testcases/choicerules/choice2b.t
+deleted file mode 100644
+index ae619f77..00000000
+--- a/test/testcases/choicerules/choice2b.t
++++ /dev/null
+@@ -1,47 +0,0 @@
+-#
+-# Test that updating package B will update package A
+-# instead of pulling in new package C
+-#
+-#Rule #5:
+-#    !A-2-2.noarch [5] (w1)
+-#    B-2-1.noarch [6] (w2)
+-#    C-2-1.noarch [8]
+-#Rule #7:
+-#    !A-2-1.noarch [4] (w1)
+-#    B-2-1.noarch [6] (w2)
+-#    C-2-1.noarch [8]
+-#Rule #8:
+-#    !A-1-1.noarch [2]I (w1)
+-#    B-1-1.noarch [3]I (w2)
+-#    C-1-1.noarch [7]
+-#
+-# ==> Choice Rule for #8:
+-#    !A-1-1.noarch [2]I (w1)
+-#    B-1-1.noarch [3]I (w2)
+-#
+-repo system 0 testtags <inline>
+-#>=Pkg: A 1 1 noarch
+-#>=Req: P = 1
+-#>=Pkg: B 1 1 noarch
+-#>=Prv: P = 1
+-repo available 0 testtags <inline>
+-#>=Pkg: A 1 1 noarch
+-#>=Req: P = 1
+-#>=Pkg: B 1 1 noarch
+-#>=Prv: P = 1
+-#>=Pkg: A 2 1 noarch
+-#>=Req: P = 2
+-#>=Pkg: A 2 2 noarch
+-#>=Req: P = 2
+-#>=Pkg: B 2 1 noarch
+-#>=Prv: P = 2
+-#>=Pkg: C 1 1 noarch
+-#>=Prv: P = 1
+-#>=Pkg: C 2 1 noarch
+-#>=Prv: P = 2
+-system i686 rpm system
+-
+-job update name B
+-result transaction,problems <inline>
+-#>upgrade A-1-1.noarch@system A-2-2.noarch@available
+-#>upgrade B-1-1.noarch@system B-2-1.noarch@available
+diff --git a/test/testcases/choicerules/choice3.t b/test/testcases/choicerules/choice3.t
+index 1b82e691..d5d41acc 100644
+--- a/test/testcases/choicerules/choice3.t
++++ b/test/testcases/choicerules/choice3.t
+@@ -1,19 +1,3 @@
+-# Do not block an update because of a choice rule
+-#
+-#Rule #3:
+-#    !B-1-1.noarch [4] (w1)
+-#    A-1-1.noarch [2]I (w2)
+-#    Anew-2-1.noarch [6]
+-#Rule #4:
+-#    !B-1-1.noarch [3]I (w1)
+-#    A-1-1.noarch [2]I (w2)
+-#    Anew-2-1.noarch [6]
+-#
+-# ==> No choice rule for Rule#4!
+-# ==> Choice Rule for #3:
+-#    !B-1-1.noarch [4] (w1)
+-#    A-1-1.noarch [2]I (w2)
+-#
+ repo system 0 testtags <inline>
+ #>=Pkg: A 1 1 noarch
+ #>=Prv: libA
+diff --git a/test/testcases/choicerules/choice3b.t b/test/testcases/choicerules/choice3b.t
+deleted file mode 100644
+index fb9c7250..00000000
+--- a/test/testcases/choicerules/choice3b.t
++++ /dev/null
+@@ -1,31 +0,0 @@
+-# Do not block an update because of a choice rule
+-#
+-#Rule #3:
+-#    !B-1-1.noarch [4] (w1)
+-#    A-1-1.noarch [2]I (w2)
+-#    Anew-2-1.noarch [6]
+-#Rule #4:
+-#    !B-1-1.noarch [3]I (w1)
+-#    A-1-1.noarch [2]I (w2)
+-#    Anew-2-1.noarch [6]
+-#
+-# ==> No choice rule for Rule#4!
+-# ==> Choice Rule for #3:
+-#    !B-1-1.noarch [4] (w1)
+-#    A-1-1.noarch [2]I (w2)
+-#
+-repo system 0 testtags <inline>
+-#>=Pkg: A 1 1 noarch
+-#>=Prv: libA
+-#>=Pkg: B 1 1 noarch
+-#>=Req: libA
+-repo available 0 testtags <inline>
+-#>=Pkg: A 2 1 noarch
+-#>=Pkg: Anew 2 1 noarch
+-#>=Prv: libA
+-system i686 rpm system
+-
+-job update all packages
+-result transaction,problems <inline>
+-#>install Anew-2-1.noarch@available
+-#>upgrade A-1-1.noarch@system A-2-1.noarch@available
+diff --git a/test/testcases/choicerules/choice4.t b/test/testcases/choicerules/choice4.t
+index 7378a569..1bf9f487 100644
+--- a/test/testcases/choicerules/choice4.t
++++ b/test/testcases/choicerules/choice4.t
+@@ -1,21 +1,3 @@
+-# This tests that A is updated instead of Anew being installed
+-#
+-#Rule #4:
+-#    !B-2-2.noarch [11] (w1)
+-#    A-2-2.noarch [9] (w2)
+-#    Anew-2-2.noarch [10]
+-#Rule #11:
+-#    !B-2-1.noarch [8] (w1)
+-#    A-2-1.noarch [6] (w2)
+-#    Anew-2-1.noarch [7]
+-#
+-#Choice Rule for #4:
+-#    !B-2-2.noarch [11] (w1)
+-#    A-2-2.noarch [9] (w2)
+-#Choice Rule for #11
+-#    !B-2-1.noarch [8] (w1)
+-#    A-2-1.noarch [6] (w2)
+-#
+ repo system 0 testtags <inline>
+ #>=Pkg: A 1 1 noarch
+ #>=Prv: libA = 1-1
+diff --git a/test/testcases/choicerules/choice5.t b/test/testcases/choicerules/choice5.t
+deleted file mode 100644
+index 9f43c8a3..00000000
+--- a/test/testcases/choicerules/choice5.t
++++ /dev/null
+@@ -1,21 +0,0 @@
+-#
+-# test that a package split does not update unrelated packages
+-#
+-repo system 0 testtags <inline>
+-#>=Pkg: A 1 1 noarch
+-#>=Prv: libA
+-#>=Pkg: B 1 1 noarch
+-#>=Req: libA
+-repo available 0 testtags <inline>
+-#>=Pkg: A 1 1 noarch
+-#>=Prv: libA
+-#>=Pkg: A 2 1 noarch
+-#>=Pkg: Asplit 2 1 noarch
+-#>=Prv: libA
+-#>=Pkg: B 2 1 noarch
+-#>=Req: libA
+-system i686 rpm system
+-job update name A
+-result transaction,problems <inline>
+-#>install Asplit-2-1.noarch@available
+-#>upgrade A-1-1.noarch@system A-2-1.noarch@available
+diff --git a/test/testcases/choicerules/choice6.t b/test/testcases/choicerules/choice6.t
+deleted file mode 100644
+index e860ae20..00000000
+--- a/test/testcases/choicerules/choice6.t
++++ /dev/null
+@@ -1,28 +0,0 @@
+-#Rule #4:
+-#    !php-fpm-7.2.24-1.noarch [5] (w1)
+-#    glibc-2.17-325.noarch [2]I (w2)
+-#    libcrypt-4.1.1-6.noarch [7]
+-#=> no choice rule for #4
+-#
+-repo @System 0 testtags <inline>
+-#>=Pkg: glibc 2.17 325 noarch
+-#>=Prv: libcrypt
+-#>=Pkg: php 5.4.16 48 noarch
+-repo available 0 testtags <inline>
+-#>=Pkg: php 7.2.24 1 noarch
+-#>=Rec: php-fpm = 7.2.24-1
+-#>=Pkg: php-fpm 7.2.24 1 noarch
+-#>=Req: libcrypt
+-#>=Pkg: php-fpm 8.0.13 2 noarch
+-#>=Req: libcrypt
+-#>=Pkg: libcrypt 4.1.1 6 noarch
+-#>=Req: libc
+-#>=Pkg: glibc 2.28 181 noarch
+-#>=Prv: libc
+-system i686 rpm @System
+-job update all packages
+-result transaction,problems <inline>
+-#>install libcrypt-4.1.1-6.noarch@available
+-#>install php-fpm-7.2.24-1.noarch@available
+-#>upgrade glibc-2.17-325.noarch@@System glibc-2.28-181.noarch@available
+-#>upgrade php-5.4.16-48.noarch@@System php-7.2.24-1.noarch@available
+-- 
+2.38.1
+
