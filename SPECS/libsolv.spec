@@ -22,8 +22,8 @@
 %define __cmake_switch(b:) %[%{expand:%%{?with_%{-b*}}} ? "ON" : "OFF"]
 
 Name:           lib%{libname}
-Version:        0.7.22
-Release:        4%{?dist}
+Version:        0.7.24
+Release:        2%{?dist}
 Summary:        Package dependency solver
 
 License:        BSD
@@ -34,6 +34,8 @@ Patch1:         0001-Add-support-for-computing-hashes-using-OpenSSL.patch
 Patch2:         0002-Revert-Improve-choice-rule-generation.patch
 Patch3:         0003-Revert-Add-complex_deps-requirement-to-choice1b-test.patch
 Patch4:         0004-Revert-Add-more-choicerules-tests.patch
+Patch5:         0005-Treat-condition-both-as-positive-and-negative-litera.patch
+Patch6:         0006-Allow_break_arch_lock_step_on_erase.patch
 
 BuildRequires:  cmake
 BuildRequires:  gcc-c++
@@ -260,6 +262,14 @@ export LD_LIBRARY_PATH=%{buildroot}%{_libdir}
 %endif
 
 %changelog
+* Wed Jun 21 2023 Jaroslav Rohel <jrohel@redhat.com> - 0.7.24-2
+- Backport Allow to break arch lock-step on erase operations (RhBug:2172288,2172292)
+
+* Tue May 16 2023 Jaroslav Rohel <jrohel@redhat.com> - 0.7.24-1
+- Update to 0.7.24
+- Backport Treat condition both as positive and negative literal in pool_add_pos_literals_complex_dep
+  (RhBug:2185061,2190136)
+
 * Thu Dec 15 2022 Nicola Sella <nsella@redhat.com> - 0.7.22-4
 - Delete patch "Move OpenSSL functions" to fix ABI change
 
