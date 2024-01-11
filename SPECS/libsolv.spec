@@ -37,7 +37,7 @@
 
 Name:           lib%{libname}
 Version:        0.7.20
-Release:        4%{?dist}
+Release:        6%{?dist}
 Summary:        Package dependency solver
 
 License:        BSD
@@ -51,6 +51,8 @@ Source:         %{url}/archive/%{version}/%{name}-%{version}.tar.gz
 Patch1:         0001-Add-support-for-computing-hashes-using-OpenSSL.patch
 Patch2:         0002-Add-support-for-storing-user-data-in-a-solv-file.patch
 Patch3:         0003-Allow-accessing-toolversion-at-runtime-and-increase-.patch
+Patch4:         0004-Treat-condition-both-as-positive-and-negative-litera.patch
+Patch5:         0005-Allow_break_arch_lock_step_on_erase.patch
 
 BuildRequires:  cmake
 BuildRequires:  gcc-c++
@@ -279,8 +281,15 @@ export LD_LIBRARY_PATH=%{buildroot}%{_libdir}
 %endif
 
 %changelog
-* Mon Dec 12 2022 Nicola Sella <nsella@redhat.com> - 0.7.20-4
-- Drop patch to fix pick of old build (RhBug:2151895)
+* Wed Jun 21 2023 Jaroslav Rohel <jrohel@redhat.com> - 0.7.20-6
+- Backport Allow to break arch lock-step on erase operations (RhBug:2172288,2172292)
+
+* Wed May 17 2023 Jaroslav Rohel <jrohel@redhat.com> - 0.7.20-5
+- Backport Treat condition both as positive and negative literal in pool_add_pos_literals_complex_dep
+  (RhBug:2185061,2190136)
+
+* Wed Dec 07 2022 Nicola Sella <nsella@redhat.com> - 0.7.20-4
+- Drop patch to fix pick of old build (RhBug:2150300,RhBug:2151551)
 
 * Thu May 05 2022 Lukas Hrazky <lhrazky@redhat.com> - 0.7.20-3
 - Allow accessing toolversion at runtime and increase it
