@@ -23,7 +23,7 @@
 
 Name:           lib%{libname}
 Version:        0.7.24
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        Package dependency solver
 
 License:        BSD
@@ -36,6 +36,8 @@ Patch3:         0003-Revert-Add-complex_deps-requirement-to-choice1b-test.patch
 Patch4:         0004-Revert-Add-more-choicerules-tests.patch
 Patch5:         0005-Treat-condition-both-as-positive-and-negative-litera.patch
 Patch6:         0006-Allow_break_arch_lock_step_on_erase.patch
+Patch7:         libsolv-0.7.24-static_analysis_fixes.patch
+Patch8:         libsolv-0.7.24-repo_conda-overwrite-the-package-subdir-with-the-inf.patch
 
 BuildRequires:  cmake
 BuildRequires:  gcc-c++
@@ -262,6 +264,11 @@ export LD_LIBRARY_PATH=%{buildroot}%{_libdir}
 %endif
 
 %changelog
+* Tue Apr 09 2024 Petr Pisar <ppisar@redhat.com> - 0.7.24-3
+- Some static analysis fixes for unitialized structs
+  Resolves: RHEL-25498
+- Fix a memory leak in parse_package() of repo conda (RHEL-25496)
+
 * Wed Jun 21 2023 Jaroslav Rohel <jrohel@redhat.com> - 0.7.24-2
 - Backport Allow to break arch lock-step on erase operations (RhBug:2172288,2172292)
 
