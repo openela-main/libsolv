@@ -23,7 +23,7 @@
 
 Name:           lib%{libname}
 Version:        0.7.24
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        Package dependency solver
 
 License:        BSD
@@ -38,6 +38,12 @@ Patch5:         0005-Treat-condition-both-as-positive-and-negative-litera.patch
 Patch6:         0006-Allow_break_arch_lock_step_on_erase.patch
 Patch7:         libsolv-0.7.24-static_analysis_fixes.patch
 Patch8:         libsolv-0.7.24-repo_conda-overwrite-the-package-subdir-with-the-inf.patch
+Patch9:         0009-Do-not-minimize-from-an-installed-to-an-uninstalled-.patch
+Patch10:        0010-Use-the-correct-solvable-id-when-checking-the-noarch.patch
+Patch11:        0011-Implement-color-filtering-when-adding-update-targets.patch
+
+# Patch merged upstream: https://github.com/openSUSE/libsolv/pull/604
+Patch12:        0012-Add-testcase-for-color-filtering-when-adding-update-.patch
 
 BuildRequires:  cmake
 BuildRequires:  gcc-c++
@@ -264,6 +270,10 @@ export LD_LIBRARY_PATH=%{buildroot}%{_libdir}
 %endif
 
 %changelog
+* Thu Jan 22 2026 Evan Goode <egoode@redhat.com> - 0.7.24-4
+- Backport "Implement color filtering when adding update targets"
+  Resolves: RHEL-103995
+
 * Tue Apr 09 2024 Petr Pisar <ppisar@redhat.com> - 0.7.24-3
 - Some static analysis fixes for unitialized structs
   Resolves: RHEL-25498

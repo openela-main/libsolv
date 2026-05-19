@@ -1,0 +1,35 @@
+From e704dd6833f908a4e4960c976bab3ebfdcc397b2 Mon Sep 17 00:00:00 2001
+From: Michael Schroeder <mls@suse.de>
+Date: Tue, 12 Nov 2024 10:44:07 +0100
+Subject: [PATCH 2/3] Use the correct solvable id when checking the noarch map
+
+Fixes issue #574
+---
+ src/solver.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/solver.c b/src/solver.c
+index 2963223f..a8a9aa74 100644
+--- a/src/solver.c
++++ b/src/solver.c
+@@ -1148,7 +1148,7 @@ replaces_installed_package(Pool *pool, Id p, Map *noupdate)
+   FOR_PROVIDES(p2, pp2, s->name)
+     {
+       s2 = pool->solvables + p2;
+-      if (s2->repo == installed && s2->name == s->name && !(noupdate && MAPTST(noupdate, p - installed->start)))
++      if (s2->repo == installed && s2->name == s->name && !(noupdate && MAPTST(noupdate, p2 - installed->start)))
+ 	return 1;
+     }
+   if (!s->obsoletes)
+@@ -1159,7 +1159,7 @@ replaces_installed_package(Pool *pool, Id p, Map *noupdate)
+       FOR_PROVIDES(p2, pp2, obs)
+ 	{
+ 	  s2 = pool->solvables + p2;
+-	  if (s2->repo != pool->installed || (noupdate && MAPTST(noupdate, p - installed->start)))
++	  if (s2->repo != pool->installed || (noupdate && MAPTST(noupdate, p2 - installed->start)))
+ 	    continue;
+ 	  if (!pool->obsoleteusesprovides && !pool_match_nevr(pool, s2, obs))
+ 	    continue;
+-- 
+2.52.0
+
