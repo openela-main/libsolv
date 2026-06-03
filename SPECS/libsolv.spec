@@ -23,7 +23,7 @@
 
 Name:           lib%{libname}
 Version:        0.7.24
-Release:        4%{?dist}
+Release:        5%{?dist}
 Summary:        Package dependency solver
 
 License:        BSD
@@ -31,9 +31,6 @@ URL:            https://github.com/openSUSE/libsolv
 Source:         %{url}/archive/%{version}/%{name}-%{version}.tar.gz
 # https://bugzilla.redhat.com/show_bug.cgi?id=1993126
 Patch1:         0001-Add-support-for-computing-hashes-using-OpenSSL.patch
-Patch2:         0002-Revert-Improve-choice-rule-generation.patch
-Patch3:         0003-Revert-Add-complex_deps-requirement-to-choice1b-test.patch
-Patch4:         0004-Revert-Add-more-choicerules-tests.patch
 Patch5:         0005-Treat-condition-both-as-positive-and-negative-litera.patch
 Patch6:         0006-Allow_break_arch_lock_step_on_erase.patch
 Patch7:         libsolv-0.7.24-static_analysis_fixes.patch
@@ -44,6 +41,8 @@ Patch11:        0011-Implement-color-filtering-when-adding-update-targets.patch
 
 # Patch merged upstream: https://github.com/openSUSE/libsolv/pull/604
 Patch12:        0012-Add-testcase-for-color-filtering-when-adding-update-.patch
+# upstream patch: https://github.com/openSUSE/libsolv/commit/2c85ed581422e072ad95119f3d7dc19eb45f29ac
+Patch13:        0013-choice-rules-also-do-solver_choicerulecheck-for-pack.patch
 
 BuildRequires:  cmake
 BuildRequires:  gcc-c++
@@ -270,6 +269,10 @@ export LD_LIBRARY_PATH=%{buildroot}%{_libdir}
 %endif
 
 %changelog
+* Wed Apr 22 2026 Marek Blaha <mblaha@redhat.com> - 0.7.24-5
+- Backport "choice rules: also do solver_choicerulecheck for package downgrades"
+  Resolves: RHEL-141449
+
 * Thu Jan 22 2026 Evan Goode <egoode@redhat.com> - 0.7.24-4
 - Backport "Implement color filtering when adding update targets"
   Resolves: RHEL-103995
