@@ -37,7 +37,7 @@
 
 Name:           lib%{libname}
 Version:        0.7.20
-Release:        6%{?dist}
+Release:        7%{?dist}
 Summary:        Package dependency solver
 
 License:        BSD
@@ -53,6 +53,14 @@ Patch2:         0002-Add-support-for-storing-user-data-in-a-solv-file.patch
 Patch3:         0003-Allow-accessing-toolversion-at-runtime-and-increase-.patch
 Patch4:         0004-Treat-condition-both-as-positive-and-negative-litera.patch
 Patch5:         0005-Allow_break_arch_lock_step_on_erase.patch
+
+# 1/2 Fix a buffer overflow when decompressing solv pages (CVE-2026-48864),
+# RHEL-178970, in upstream 0.7.21
+Patch6:         0006-Add-check_decompress_buf-and-repopagestore_decompres.patch
+# 2/2 Fix a buffer overflow when decompressing solv pages (CVE-2026-48864),
+# RHEL-178970, rejected by upstream,
+# <https://github.com/openSUSE/libsolv/pull/622>.
+Patch7:         0007-Fix-a-buffer-overflow-when-decompressing-solv-pages.patch
 
 BuildRequires:  cmake
 BuildRequires:  gcc-c++
@@ -281,6 +289,10 @@ export LD_LIBRARY_PATH=%{buildroot}%{_libdir}
 %endif
 
 %changelog
+* Thu May 28 2026 Petr Pisar <ppisar@redhat.com> - 0.7.20-7
+- Fix a buffer overflow when decompressing solv pages (CVE-2026-48864)
+  (RHEL-178970)
+
 * Wed Jun 21 2023 Jaroslav Rohel <jrohel@redhat.com> - 0.7.20-6
 - Backport Allow to break arch lock-step on erase operations (RhBug:2172288,2172292)
 

@@ -1,0 +1,152 @@
+From 1595089d2944cb6a96d8a0ce816fbba329642d19 Mon Sep 17 00:00:00 2001
+From: Michael Schroeder <mls@suse.de>
+Date: Fri, 25 Feb 2022 17:21:17 +0100
+Subject: [PATCH] Add check_decompress_buf() and
+ repopagestore_decompress_page()
+
+Upstream commit: 85ced9742b10cd2ce9c43dc8722dbd6aa84662ac ("solv
+format: support storing of package dependencies in a compressed
+block")
+
+Petr Pisar: check_decompress_buf() and repopagestore_decompress_page()
+ported to 0.7.20. Also a cosmetic correction of an artihmetics in
+unchecked_decompress_buf() ported to align with
+check_decompress_buf().
+---
+ src/repopage.c | 89 +++++++++++++++++++++++++++++++++++++++++++++++---
+ src/repopage.h |  2 ++
+ 2 files changed, 86 insertions(+), 5 deletions(-)
+
+diff --git a/src/repopage.c b/src/repopage.c
+index 9e9694f..971de77 100644
+--- a/src/repopage.c
++++ b/src/repopage.c
+@@ -466,14 +466,12 @@ unchecked_decompress_buf(const unsigned char *in, unsigned int in_len,
+ 	  {
+ 	    o = in[0] | (in[1] << 8);
+ 	    in += 2;
+-	    first = first & 31;
+-	    first += 3;
++	    first = (first & 15) + 3;
+ 	    break;
+ 	  }
+ 	case 15:
+-	  /* f1 1111llll <8o> <8o> <8l> */
+-	  /* f2 11110lll <8o> <8o> <8l> */
+-	  /* g 11111lll <8o> <8o> <8o> <8l> */
++	  /* f2 11110lll <8l> <8o> <8o> */
++	  /* g  11111lll <8l> <8o> <8o> <8o> */
+ 	  {
+ 	    first = first & 15;
+ 	    if (first >= 8)
+@@ -557,6 +555,77 @@ unchecked_decompress_buf(const unsigned char *in, unsigned int in_len,
+   return out - orig_out;
+ }
+ 
++static unsigned int
++check_decompress_buf(const unsigned char *in, unsigned int in_len)
++{
++  unsigned int out_len = 0;
++  const unsigned char *in_end = in + in_len;
++  while (in < in_end)
++    {
++      unsigned int first = *in++;
++      int o;
++      switch (first >> 4)
++	{
++	default:
++	  /* This default case can't happen, but GCCs VRP is not strong
++	     enough to see this, so make this explicitely not fall to
++	     the end of the switch, so that we don't have to initialize
++	     o above.  */
++	  continue;
++	case 0: case 1:
++	case 2: case 3:
++	case 4: case 5:
++	case 6: case 7:
++	  out_len++;
++	  continue;
++	case 8: case 9:
++	  /* b 100lllll <l+1 bytes> */
++	  first = (first & 31) + 1;
++	  in += first;
++	  out_len += first;
++	  continue;
++	case 10: case 11:
++	  /* c 101oolll <8o> */
++	  o = (first & (3 << 3)) << 5 | *in++;
++	  first = (first & 7) + 2;
++	  break;
++	case 12: case 13:
++	  /* d 110lllll <8o> */
++	  o = *in++;
++	  first = (first & 31) + 10;
++	  break;
++	case 14:
++	  /* e 1110llll <8o> <8o> */
++	  o = in[0] | (in[1] << 8);
++	  in += 2;
++	  first = (first & 15) + 3;
++	  break;
++	case 15:
++	  /* f1 1111llll <8l> <8o> <8o> */
++	  /* g  11111lll <8l> <8o> <8o> <8o> */
++	  first = first & 15;
++	  if (first >= 8)
++	    {
++	      first = (((first - 8) << 8) | in[0]) + 5;
++	      o = in[1] | (in[2] << 8) | (in[3] << 16);
++	      in += 4;
++	    }
++	  else
++	    {
++	      first = ((first << 8) | in[0]) + 19;
++	      o = in[1] | (in[2] << 8);
++	      in += 3;
++	    }
++	  break;
++	}
++      /* fprintf(stderr, "ref: %d @ %d\n", first, o); */
++      if (o >= out_len)
++	return 0;
++      out_len += first;
++    }
++  return out_len;
++}
++
+ /**********************************************************************/
+ 
+ void repopagestore_init(Repopagestore *store)
+@@ -757,6 +826,16 @@ repopagestore_compress_page(unsigned char *page, unsigned int len, unsigned char
+   return compress_buf(page, len, cpage, max);
+ }
+ 
++unsigned int
++repopagestore_decompress_page(const unsigned char *cpage, unsigned int len, unsigned char *page, unsigned int max)
++{
++  unsigned int l = check_decompress_buf(cpage, len);
++  if (l == 0 || l > max)
++    return 0;
++  return unchecked_decompress_buf(cpage, len, page, max);
++}
++
++
+ #define SOLV_ERROR_EOF		3
+ #define SOLV_ERROR_CORRUPT	6
+ 
+diff --git a/src/repopage.h b/src/repopage.h
+index b5f2eee..9fb84f0 100644
+--- a/src/repopage.h
++++ b/src/repopage.h
+@@ -53,6 +53,8 @@ unsigned char *repopagestore_load_page_range(Repopagestore *store, unsigned int
+ 
+ /* compress a page, return compressed len */
+ unsigned int repopagestore_compress_page(unsigned char *page, unsigned int len, unsigned char *cpage, unsigned int max);
++/* uncompress a page, return uncompressed len */
++unsigned int repopagestore_decompress_page(const unsigned char *cpage, unsigned int len, unsigned char *page, unsigned int max);
+ 
+ /* setup page data for repodata_load_page_range */
+ int repopagestore_read_or_setup_pages(Repopagestore *store, FILE *fp, unsigned int pagesz, unsigned int blobsz);
+-- 
+2.54.0
+
