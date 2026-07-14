@@ -23,7 +23,7 @@
 
 Name:           lib%{libname}
 Version:        0.7.24
-Release:        5%{?dist}
+Release:        6%{?dist}
 Summary:        Package dependency solver
 
 License:        BSD
@@ -43,6 +43,11 @@ Patch11:        0011-Implement-color-filtering-when-adding-update-targets.patch
 Patch12:        0012-Add-testcase-for-color-filtering-when-adding-update-.patch
 # upstream patch: https://github.com/openSUSE/libsolv/commit/2c85ed581422e072ad95119f3d7dc19eb45f29ac
 Patch13:        0013-choice-rules-also-do-solver_choicerulecheck-for-pack.patch
+
+# Fix a buffer overflow when decompressing solv pages (CVE-2026-48864),
+# RHEL-178982, rejected by upstream,
+# <https://github.com/openSUSE/libsolv/pull/622>.
+Patch14:        0014-Fix-a-buffer-overflow-when-decompressing-solv-pages.patch
 
 BuildRequires:  cmake
 BuildRequires:  gcc-c++
@@ -269,6 +274,10 @@ export LD_LIBRARY_PATH=%{buildroot}%{_libdir}
 %endif
 
 %changelog
+* Fri Jun 05 2026 Petr Pisar <ppisar@redhat.com> - 0.7.24-6
+- Fix a buffer overflow when decompressing solv pages (CVE-2026-48864)
+  (RHEL-178982)
+
 * Wed Apr 22 2026 Marek Blaha <mblaha@redhat.com> - 0.7.24-5
 - Backport "choice rules: also do solver_choicerulecheck for package downgrades"
   Resolves: RHEL-141449
